@@ -20,6 +20,7 @@ def createDB():
         return False
     query = QSqlQuery()
 
-    query.exec_("create table bookmarks( url varchar(20) UNIQUE)")
-    query.exec_("create table history( url varchar(20), time text(40))")
+    query.exec_("create table bookmarks( url varchar(20) UNIQUE);")
+    query.exec_(
+        "create table history( url varchar(20), time text(40) , UNIQUE(url,time));")
     return True

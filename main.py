@@ -14,18 +14,20 @@ from bookmarks import *
 from history import *
 from tabs import *
 from buttons import *
-from historyPopup import *
+from popup import *
+from settings import *
 
 
-class MainWindow(QMainWindow):
+class Window(QMainWindow):
 
     # constructor
     def __init__(self, *args, **kwargs):
-        super(MainWindow, self).__init__(*args, **kwargs)
-
+        super(Window, self).__init__(*args, **kwargs)
         # Establish sqlite connection
         createDB()
 
+        self.mode = 'normal'
+        self.settingTabOpen = False
         # creating a tab widget
         self.tabs = initTabs(self)
 
@@ -65,15 +67,14 @@ class MainWindow(QMainWindow):
         # adding line edit to tool bar
         navtb.addWidget(self.urlbar)
 
-        stop_btn = initStopButton(self)
-        star_btn = initStarButton(self)
+        self.star_btn = initStarButton(self)
 
-        navtb.addAction(stop_btn)
-        navtb.addWidget(star_btn)
+        navtb.addWidget(self.star_btn)
 
-        self.bookmarks = initBookmarks()
-        self.bookmarks.currentTextChanged.connect(self.navigate_to_bookmark)
-        navtb.addWidget(self.bookmarks)
+        self.settings_btn = initSettingsButton(self)
+        navtb.addWidget(self.settings_btn)
+
+        # self.bookmarks = getAllBookmarks()
 
         # creating first tab
         self.add_new_tab(QUrl('http://www.google.com'), 'Homepage')
@@ -83,6 +84,10 @@ class MainWindow(QMainWindow):
 
         # setting window title
         self.setWindowTitle("George Browser")
+
+        # opening window in maximized size
+        self.showMaximized()
+        self.update_star_button()
 
     # method for adding new tab
     def add_new_tab(self, qurl=None, label="Blank"):
@@ -159,9 +164,9 @@ class MainWindow(QMainWindow):
 
     # action to go to home
     def navigate_home(self):
-
         # go to google
         self.tabs.currentWidget().setUrl(QUrl("http://www.google.com"))
+        self.update_star_button()
 
     # method for navigate to url
     def navigate_to_url(self):
@@ -176,10 +181,10 @@ class MainWindow(QMainWindow):
 
         # set the url
         self.tabs.currentWidget().setUrl(q)
+        self.update_star_button()
 
-# method for navigate to url
+    # method for navigate to url
     def navigate_to_bookmark(self, text):
-        print(text)
         q = QUrl(text)
 
         # if scheme is blank
@@ -189,31 +194,96 @@ class MainWindow(QMainWindow):
 
         # set the url
         self.tabs.currentWidget().setUrl(q)
+        self.update_star_button()
 
     # method to update the url
+
     def update_urlbar(self, q, browser=None):
 
         # If this signal is not from the current tab, ignore
         if browser != self.tabs.currentWidget():
 
             return
-        addHistory(q.toString())
+        if self.mode != 'incognito':
+            addHistory(q.toString())
         # set text to the url bar
         self.urlbar.setText(q.toString())
 
         # set cursor position
         self.urlbar.setCursorPosition(0)
+        self.update_star_button()
 
     def save_bookmark(self):
+        if self.mode == 'incognito':
+            return
         current_url = self.urlbar.text()
         addBookmark(current_url)
-        self.bookmarks = resetBookmarksList(self.bookmarks)
+        # self.bookmarks = resetBookmarksList(self.bookmarks)
         self.navigate_to_bookmark(current_url)
         return
 
-    def showHistory(self):
-        pop = Popup(self)
+    def show_history(self):
+        if self.mode == 'incognito':
+            return
+        pop = Popup(self, 'history')
         pop.show()
+
+    def show_bookmarks(self):
+        pop = Popup(self, 'bookmarks')
+        pop.show()
+
+    def show_settings(self):
+        # if self.settingTabOpen == False:
+        self.settingTabOpen = True
+        self.pop = SettingsMenu(self)
+        self.pop.show()
+
+    def close_settings(self):
+        self.settingTabOpen = False
+        self.pop.close()
+
+    def new_window(self):
+        window = Window()
+
+    def new_private_window(self):
+        window = IncognitoWindow()
+
+    def print_page(self):
+        # Create printer
+        printer = QPrinter()
+        # Create painter
+        painter = QPainter()
+        # Start painter
+        painter.begin(printer)
+        # Grab a widget you want to print
+        screen = self.grab()
+        # Draw grabbed pixmap
+        painter.drawPixmap(10, 10, screen)
+        # End painting
+        painter.end()
+
+    def update_star_button(self):
+        if self.mode == 'incognito':
+            return
+        already_bookmarked = is_bookmarked(self.urlbar.text())
+        if already_bookmarked:
+            self.star_btn.setIcon(QIcon(qta.icon('ph.star', color='blue')))
+
+
+class IncognitoWindow(Window):
+
+    # constructor
+    def __init__(self, *args, **kwargs):
+        super(IncognitoWindow, self).__init__(*args, **kwargs)
+        self.setStyleSheet("""
+        background-color: hsl(43,43,43);
+        color: white;
+        """
+                           )
+
+        self.mode = 'incognito'
+
+        self.setWindowTitle("George Private Browser")
 
 
 # creating a PyQt5 application
@@ -223,7 +293,7 @@ app = QApplication(sys.argv)
 app.setApplicationName("Custom Web Browser")
 
 # creating MainWindow object
-window = MainWindow()
+window = Window()
 
 # loop
 app.exec_()
