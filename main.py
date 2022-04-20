@@ -1,3 +1,5 @@
+from fbs_runtime.application_context.PyQt5 import ApplicationContext
+
 # importing required libraries
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
@@ -202,7 +204,7 @@ class Window(QMainWindow):
 
         # If this signal is not from the current tab, ignore
         if browser != self.tabs.currentWidget():
-
+            self.update_star_button()
             return
         if self.mode != 'incognito':
             addHistory(q.toString())
@@ -268,6 +270,8 @@ class Window(QMainWindow):
         already_bookmarked = is_bookmarked(self.urlbar.text())
         if already_bookmarked:
             self.star_btn.setIcon(QIcon(qta.icon('ph.star', color='blue')))
+        else:
+            self.star_btn.setIcon(QIcon(qta.icon('ph.star')))
 
 
 class IncognitoWindow(Window):
@@ -286,14 +290,17 @@ class IncognitoWindow(Window):
         self.setWindowTitle("George Private Browser")
 
 
-# creating a PyQt5 application
-app = QApplication(sys.argv)
+if __name__ == "__main__":
+    # creating a PyQt5 application
+    app = QApplication(sys.argv)
+    # appctxt = ApplicationContext()
 
-# setting name to the application
-app.setApplicationName("Custom Web Browser")
+    # setting name to the application
+    # appctxt.app.setApplicationName("Custom Web Browser")
+    app.setApplicationName("Custom Web Browser")
+    # creating MainWindow object
+    window = Window()
 
-# creating MainWindow object
-window = Window()
-
-# loop
-app.exec_()
+    # loop
+    app.exec_()
+    # sys.exit(appctxt.app.exec())
