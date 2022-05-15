@@ -22,13 +22,15 @@ def initHistory(self: QMainWindow, parent: QMainWindow):
     # Create bookmarks combobox
     history_table = QTableWidget()
     history_table.setRowCount(len(history))
-    history_table.setColumnCount(3)
+    history_table.setColumnCount(2)
     header = history_table.horizontalHeader()
     header.setSectionResizeMode(0, QHeaderView.Stretch)
     header.setSectionResizeMode(1, QHeaderView.ResizeToContents)
-    header.setSectionResizeMode(2, QHeaderView.ResizeToContents)
+    # header.setSectionResizeMode(2, QHeaderView.ResizeToContents)
     index = 0
     # First date
+    if len(history) == 0:
+        return history_table
     date = history[0][1].strip()
     for hist in history:
         # Check if date changes
@@ -44,8 +46,8 @@ def initHistory(self: QMainWindow, parent: QMainWindow):
             index, 0, QTableWidgetItem(f"{hist[0].strip()}"))
         history_table.setItem(
             index, 1, QTableWidgetItem(f"{hist[1].strip()}"))
-        history_table.setItem(
-            index, 2, QTableWidgetItem("X"))
+        # history_table.setItem(
+        #     index, 2, QTableWidgetItem("Go"))
         date = hist[1].strip()
         index += 1
     history_table.move(0, 0)
@@ -62,18 +64,17 @@ def item_clicked(item, parent, table):
     row = item.row()
     col = item.row()
     text = item.text().strip()
+    url = table.item(row, 0).text()
     # Navigate
-    if col == 1:
-        if text != "":
-            parent.navigate_to_bookmark(text)
-    # Date = nothing
-    elif col == 2:
-        return
-    # Delete
-    else:
-        url = table.item(row, 0).text()
-        date = table.item(row, 1).text()
-        deleteHistory(url, date)
+    # if col == 1:
+    #     if text != "":
+    parent.navigate_to_bookmark(url)
+    # # Date = nothing
+    # elif col == 2:
+    #     return
+    # # Delete
+    # else:
+    #     url = table.item(row, 0).text()
     return
 
 
@@ -86,12 +87,20 @@ def addHistory(url):
     return
 
 
-def deleteHistory(url, date):
+def deleteHistory(dateFrom, dateTo, clear):
+    if(dateFrom != NULL):
+        dateFrom = dateFrom.strftime("%Y%m%d")
+    if(dateTo != NULL):
+        dateTo = dateTo.strftime("%Y%m%d")
+
     QSqlDatabase.database()
     query = QSqlQuery()
-    print(url)
-    print(date)
-    query.exec_(f"delete from history where url ='{url}' and time='{date}'")
+
+    if clear == True:
+        query.exec_("delete from history")
+    else:
+        query.exec_(
+            f"delete from history where substr(time,7)||substr(time,4,2)||substr(time,1,2) between '{dateFrom}' and '{dateTo}'")
     return
 
 

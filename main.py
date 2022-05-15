@@ -18,6 +18,7 @@ from tabs import *
 from buttons import *
 from popup import *
 from settings import *
+from datetime import *
 
 
 class Window(QMainWindow):
@@ -227,8 +228,31 @@ class Window(QMainWindow):
     def show_history(self):
         if self.mode == 'incognito':
             return
-        pop = Popup(self, 'history')
-        pop.show()
+        self.historyPop = Popup(self, 'history')
+        self.historyPop.show()
+
+    def deleteTodayHistory(self):
+        today = datetime.utcnow().date()
+        todayStart = datetime(today.year, today.month, today.day)
+        yesterDay = todayStart - timedelta(1)
+        end = todayStart + timedelta(1)
+        deleteHistory(yesterDay, end, False)
+        self.historyPop.hide()
+        self.show_history()
+
+    def deleteMonthHistory(self):
+        today = datetime.utcnow().date()
+        todayStart = datetime(today.year, today.month, today.day)
+        monthStart = todayStart - timedelta(30)
+        end = todayStart + timedelta(1)
+        deleteHistory(monthStart, end, False)
+        self.historyPop.hide()
+        self.show_history()
+
+    def clearHistory(self):
+        deleteHistory(NULL, NULL, True)
+        self.historyPop.hide()
+        self.show_history()
 
     def show_bookmarks(self):
         pop = Popup(self, 'bookmarks')
@@ -281,7 +305,7 @@ class IncognitoWindow(Window):
         super(IncognitoWindow, self).__init__(*args, **kwargs)
         self.setStyleSheet("""
         background-color: hsl(43,43,43);
-        color: white;
+        color: blue;
         """
                            )
 

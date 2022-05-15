@@ -58,3 +58,24 @@ def initSettingsButton(self: QMainWindow):
     settings_btn.setIcon(QIcon(qta.icon('ph.list')))
     settings_btn.clicked.connect(self.show_settings)
     return settings_btn
+
+
+def initDeleteTodayHistoryButton(self: QMainWindow):
+    delete_today_history_button = QToolButton()
+    delete_today_history_button.setText("&Clear Today")
+    delete_today_history_button.clicked.connect(self.deleteTodayHistory)
+    return delete_today_history_button
+
+
+def initDeleteMonthHistoryButton(self: QMainWindow):
+    delete_month_history_button = QToolButton()
+    delete_month_history_button.setText("&Clear Month's")
+    delete_month_history_button.clicked.connect(self.deleteMonthHistory)
+    return delete_month_history_button
+
+
+def initClearHistoryButton(self: QMainWindow):
+    clear_history_button = QToolButton()
+    clear_history_button.setText("&Clear All")
+    clear_history_button.clicked.connect(self.clearHistory)
+    return clear_history_button

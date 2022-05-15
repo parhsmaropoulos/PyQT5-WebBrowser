@@ -16,7 +16,7 @@ class SettingsMenu(QMainWindow):
         self.listwidget.insertItem(2, "New Private Window")
         self.listwidget.insertItem(3, "Bookmarks")
         self.listwidget.insertItem(4, "History")
-        self.listwidget.insertItem(5, "Print")
+        # self.listwidget.insertItem(5, "Print")
         self.listwidget.clicked.connect(lambda item, parent=parent:
                                         self.clicked(item, parent))
         self.setCentralWidget(self.listwidget)
